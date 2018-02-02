@@ -1,0 +1,405 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "**Profile services** là interface của hệ thống CAS cho các hệ thống bên ngoài sử dụng, tác động vào tài khoản người dùng trên TCBS",
+    "version": "1.0.1",
+    "title": "CAS - Profile services",
+    "contact": {
+      "email": "minhnd7@techcombank.com.vn"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://profile.tcbs.com.vn/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://beta.profile.tcbs.com.vn/v1",
+      "description": "Staging server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "user",
+      "description": "Quản lý tài khoản TCBS"
+    },
+    {
+      "name": "pending user",
+      "description": "Quản lý các tài khoản mới đang chờ kích hoạt"
+    }
+  ],
+  "paths": {
+    "/pending/users/{refid}/approve": {
+      "post": {
+        "tags": [
+          "pending user"
+        ],
+        "summary": "Chuyển pending user thành TCBS user",
+        "description": "Chuyển pending user thành TCBS user, trả về thông tin của user mới được tạo",
+        "parameters": [
+          {
+            "name": "refid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy user"
+          },
+          "500": {
+            "description": "Lỗi hệ thống"
+          }
+        }
+      }
+    },
+    "/pending/users/{refid}/link": {
+      "put": {
+        "tags": [
+          "pending user"
+        ],
+        "summary": "Tạo activation link mới cho pending user theo refID",
+        "parameters": [
+          {
+            "name": "refid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timeout": {
+                    "type": "string",
+                    "description": "Khoảng thời gian tồn tại của link đó tính theo giây, từ lúc tạo link."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "activationLink": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input không đúng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy user"
+          },
+          "500": {
+            "description": "Lỗi hệ thống"
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Tạo tài khoản mới",
+        "requestBody": {
+          "description": "Thông tin cần thiết để tạo user",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Thành công"
+          },
+          "400": {
+            "description": "Input không đúng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống"
+          }
+        }
+      }
+    },
+    "/users/{tcbsid}": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Lấy thông tin user theo TCBSID",
+        "parameters": [
+          {
+            "name": "tcbsid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy"
+          },
+          "500": {
+            "description": "Lỗi hệ thống"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Cập nhật thông tin user",
+        "parameters": [
+          {
+            "name": "tcbsid",
+            "in": "query",
+            "description": "TCBSID của user cần cập nhật",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Thông tin mới của user (trừ TCBSID và Code105C không thay đổi được",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "404": {
+            "description": "Không tìm thấy"
+          },
+          "500": {
+            "description": "Lỗi hệ thống"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Xóa user",
+        "parameters": [
+          {
+            "name": "tcbsid",
+            "in": "query",
+            "description": "TCBSID của user cần xóa",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "404": {
+            "description": "Không tìm thấy"
+          },
+          "500": {
+            "description": "Lỗi hệ thống"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "TCBSID": {
+            "type": "string"
+          },
+          "code105C": {
+            "type": "string",
+            "description": "Mã 105C của khác hàng, tương ứng trường username trong database"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "integer"
+          },
+          "birthday": {
+            "type": "string",
+            "description": "Ngày sinh"
+          },
+          "address": {
+            "type": "string"
+          },
+          "job": {
+            "type": "string"
+          },
+          "nationality": {
+            "type": "string"
+          },
+          "referer": {
+            "type": "string",
+            "description": "TCBSID của người giới thiệu"
+          },
+          "IDNumber": {
+            "type": "string",
+            "description": "Số chứng minh nhân dân"
+          },
+          "IDPlace": {
+            "type": "string"
+          },
+          "IDDate": {
+            "type": "string",
+            "description": "Ngày cấp chứng minh nhân dân"
+          },
+          "IDURL": {
+            "type": "string",
+            "description": "Đường dẫn tới nơi lưu ảnh CMND"
+          },
+          "bankAccounts": {
+            "type": "array",
+            "description": "Các tài khoản ngân hàng của user",
+            "items": {
+              "$ref": "#/components/schemas/BankAccount"
+            }
+          },
+          "status": {
+            "type": "integer",
+            "description": "Trạng thái của tài khoản. 1 - Đã chuyển E.OPS, 2 - Đã chuyển F.OPS, 3 - Đã chuyển E.OPS và F.OPS, 4 - Đã kiểm tra bản cứng."
+          },
+          "documentStatus": {
+            "type": "integer",
+            "description": "Trạng thái hồ sơ. -1 hoặc Null - Chưa có hồ sơ, 0 - Hồ sơ còn thiếu, 1 -  Đã đủ hồ sơ"
+          },
+          "vsdFlexStatus": {
+            "type": "integer",
+            "description": "Trạng thái kích hoạt VSD. 0 - Chưa kích hoạt VSD, 1 - Đã kích hoạt VSD, 2 - Đã chuyển Op, 3 - Đã gửi VSD, 4 - Tài khoản OTC"
+          },
+          "vsdFundStatus": {
+            "type": "integer",
+            "description": "Trạng thái kích hoạt VSD cho F. 0 - Chưa kích hoạt VSD, 1 - Đã kích hoạt VSD, 2 - Đã chuyển Op, 3 - Đã gửi VSD"
+          }
+        }
+      },
+      "BankAccount": {
+        "type": "object",
+        "properties": {
+          "accountNo": {
+            "type": "string",
+            "description": "Số tài khoản ngân hàng"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "Tên tài khoản ngân hàng"
+          },
+          "bankCode": {
+            "type": "string",
+            "description": "Mã ngân hàng"
+          },
+          "bankName": {
+            "type": "string",
+            "description": "Tên ngân hàng"
+          },
+          "bankBranch": {
+            "type": "string"
+          },
+          "bankProvince": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
